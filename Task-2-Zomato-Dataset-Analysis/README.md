@@ -12,7 +12,10 @@ This project provides a comprehensive exploratory data analysis (EDA) and predic
 ```
 Zomato_Dataset_Analysis/
 ├── README.md                          # Project documentation & guidelines
+├── app.py                             # Interactive Streamlit Web Application
+├── requirements.txt                   # Deployment dependencies configuration
 ├── Zomato.ipynb                       # Complete executed Jupyter Notebook
+├── Zomato_Analysis_Report.pdf         # Comprehensive PDF Project Report
 ├── zomato.csv                         # Raw Zomato restaurant dataset
 ├── images/                            # Saved high-resolution visualization plots
 │   ├── cuisine_vs_rating.png
