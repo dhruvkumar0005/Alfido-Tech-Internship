@@ -229,18 +229,28 @@ if app_mode == "📊 Executive Dashboard":
     
     # Interactive Data Filtering
     st.markdown("### 🔍 Dataset Explorer & Filter Options")
+    
+    all_content_types = sorted(list(df['photo type'].dropna().unique()))
+    all_filters = sorted(list(df['Insta filter used'].dropna().unique()))
+    all_days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    
     col_f1, col_f2, col_f3 = st.columns(3)
     with col_f1:
-        selected_type = st.multiselect("Filter Content Type:", options=df['photo type'].unique(), default=df['photo type'].unique())
+        selected_type = st.multiselect("Filter Content Type:", options=all_content_types, default=all_content_types)
     with col_f2:
-        selected_filter = st.multiselect("Filter Insta Filter Used:", options=df['Insta filter used'].unique(), default=df['Insta filter used'].unique())
+        selected_filter = st.multiselect("Filter Insta Filter Used:", options=all_filters, default=all_filters)
     with col_f3:
-        selected_days = st.multiselect("Filter Day of Week:", options=df['created_day_name'].unique(), default=df['created_day_name'].unique())
+        selected_days = st.multiselect("Filter Day of Week:", options=all_days, default=all_days)
         
+    # Handle empty multiselect selections gracefully (empty list means show all, not filter out everything)
+    effective_type = selected_type if len(selected_type) > 0 else all_content_types
+    effective_filter = selected_filter if len(selected_filter) > 0 else all_filters
+    effective_days = selected_days if len(selected_days) > 0 else all_days
+    
     filtered_df = df[
-        (df['photo type'].isin(selected_type)) & 
-        (df['Insta filter used'].isin(selected_filter)) &
-        (df['created_day_name'].isin(selected_days))
+        (df['photo type'].isin(effective_type)) & 
+        (df['Insta filter used'].isin(effective_filter)) &
+        (df['created_day_name'].isin(effective_days))
     ]
     
     st.write(f"Showing **{len(filtered_df)}** matching posts:")
@@ -275,7 +285,7 @@ elif app_mode == "📈 EDA & Visualizations":
         with col_t1:
             img_p1 = find_file(os.path.join("images", "best_posting_hours.png"))
             if img_p1:
-                st.image(img_p1, caption="Average Engagement by Hour of Day (0-23)")
+                st.image(img_p1, caption="Average Engagement by Hour of Day (0-23)", use_container_width=True)
             else:
                 h_df = df.groupby('created_hour')['total_engagement'].mean().reset_index()
                 fig_h = px.bar(h_df, x='created_hour', y='total_engagement', title="Average Total Engagement by Hour of Day", color='total_engagement', color_continuous_scale='Viridis')
@@ -284,7 +294,7 @@ elif app_mode == "📈 EDA & Visualizations":
         with col_t2:
             img_p2 = find_file(os.path.join("images", "posting_day_engagement.png"))
             if img_p2:
-                st.image(img_p2, caption="Average Engagement by Day of Week")
+                st.image(img_p2, caption="Average Engagement by Day of Week", use_container_width=True)
             else:
                 day_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
                 d_df = df.groupby('created_day_name')['total_engagement'].mean().reindex(day_order).reset_index()
@@ -299,7 +309,7 @@ elif app_mode == "📈 EDA & Visualizations":
         with col_f1:
             img_p3 = find_file(os.path.join("images", "content_type_performance.png"))
             if img_p3:
-                st.image(img_p3, caption="Engagement Distribution Across Content Formats")
+                st.image(img_p3, caption="Engagement Distribution Across Content Formats", use_container_width=True)
             else:
                 fig_box = px.box(df, x='photo type', y='total_engagement', color='photo type', title="Engagement Distribution across Content Types")
                 st.plotly_chart(fig_box, use_container_width=True)
@@ -307,7 +317,7 @@ elif app_mode == "📈 EDA & Visualizations":
         with col_f2:
             img_p4 = find_file(os.path.join("images", "filter_impact.png"))
             if img_p4:
-                st.image(img_p4, caption="Filter Usage vs Engagement Rate (%)")
+                st.image(img_p4, caption="Filter Usage vs Engagement Rate (%)", use_container_width=True)
             else:
                 fig_flt = px.bar(df.groupby('Insta filter used')['engagement_rate_pct'].mean().reset_index(), x='Insta filter used', y='engagement_rate_pct', title="Filter Usage vs Avg Engagement Rate (%)", color='Insta filter used')
                 st.plotly_chart(fig_flt, use_container_width=True)
@@ -320,7 +330,7 @@ elif app_mode == "📈 EDA & Visualizations":
         with col_h1:
             img_p5 = find_file(os.path.join("images", "hashtag_emoji_analysis.png"))
             if img_p5:
-                st.image(img_p5, caption="Hashtag Count vs Total Engagement")
+                st.image(img_p5, caption="Hashtag Count vs Total Engagement", use_container_width=True)
             else:
                 fig_hs = px.scatter(df, x='avg_hashtags', y='total_engagement', color='photo type', size='tag_count', title="Hashtag Count vs Total Engagement")
                 st.plotly_chart(fig_hs, use_container_width=True)
@@ -328,7 +338,7 @@ elif app_mode == "📈 EDA & Visualizations":
         with col_h2:
             img_p6 = find_file(os.path.join("images", "engagement_distribution.png"))
             if img_p6:
-                st.image(img_p6, caption="Engagement Rate (%) Distribution")
+                st.image(img_p6, caption="Engagement Rate (%) Distribution", use_container_width=True)
             else:
                 fig_dist = px.histogram(df, x='engagement_rate_pct', nbins=20, title="Distribution of Engagement Rate (%)", color_discrete_sequence=['teal'])
                 st.plotly_chart(fig_dist, use_container_width=True)
@@ -337,7 +347,7 @@ elif app_mode == "📈 EDA & Visualizations":
         st.markdown("#### 4. Random Forest Machine Learning Feature Importance")
         img_p7 = find_file(os.path.join("images", "feature_importance.png"))
         if img_p7:
-            st.image(img_p7, caption="Relative Importance of Features in Engagement Prediction", use_column_width=True)
+            st.image(img_p7, caption="Relative Importance of Features in Engagement Prediction", use_container_width=True)
         else:
             fi = model_payload.get('feature_importances', {})
             fi_df = pd.DataFrame(list(fi.items()), columns=['Feature', 'Importance']).sort_values(by='Importance', ascending=True)
